@@ -20,8 +20,25 @@ tfpd = tfp.distributions
 from quadax import quadgk, quadcc
 import matplotlib.pyplot as plt
 from utils import save_nested_sampler_results, load_nested_sampler_results, import_bh_data
+from utils import logskewnormal_logpdf, skewnormal_cdf, logskewnormal_mean
 
 DEBUG = True
+
+@jit
+def logskewnormal_system_residuals(mean, sigma, shape, x, deltax_low, deltax_high, quantile_low=0.34, quantile_high=0.34):
+    mean_from_model = logskewnormal_mean(mean=mean, sigma=sigma, shape=shape)[0]
+    logx = jnp.log(x)
+    logx_high = jnp.log(x + deltax_high)
+    logx_low = jnp.log(x - deltax_low)
+    low_prob_mass = skewnormal_cdf(logx, mean=mean, sigma=sigma, shape=shape)-skewnormal_cdf(logx_low, mean=mean, sigma=sigma, shape=shape)
+    up_prob_mass = skewnormal_cdf(logx_high, mean=mean, sigma=sigma, shape=shape)-skewnormal_cdf(logx, mean=mean, sigma=sigma, shape=shape)
+    
+    return jnp.array([
+        mean_from_model - x,
+        low_prob_mass - quantile_low,
+        up_prob_mass - quantile_high,
+    ])
+
 
 if __name__ == "__main__":
     bh_data = import_bh_data("data/bh_table_1.txt")

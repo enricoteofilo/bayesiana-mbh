@@ -78,42 +78,6 @@ def newton_solver(callable_1, callable_2, guess_tuple, a, b, A_target, B_target,
     v_final, _, _ = jax.lax.while_loop(cond, one_step, init_state)
     return v_final
 
-
-def logskewnormal_system_residuals(mean, sigma, shape, measured_mean, M, deltaM_low, deltaM_high, quantile=0.32):
-    """
-    Residual vector for the system:
-      1) measured_mean = E[X]
-      2) quantile = P(M-deltaM_low < X <= M)
-      3) quantile = P(M < X <= M+deltaM_high)
-    where X follows a log-skew-normal law parameterized by (mean, sigma, shape)
-    in log-space.
-    """
-    if M <= 0.0:
-        raise ValueError("M must be strictly positive.")
-    if M - deltaM_low <= 0.0:
-        raise ValueError("M - deltaM_low must be strictly positive.")
-    if deltaM_high <= 0.0:
-        raise ValueError("deltaM_high must be strictly positive.")
-    if sigma <= 0.0:
-        raise ValueError("sigma must be strictly positive.")
-
-    mean_model = logskewnormal_mean(mean=mean, sigma=sigma, shape=shape)[0]
-    logM = jnp.log(M)
-    logM_low = jnp.log(M - deltaM_low)
-    logM_high = jnp.log(M + deltaM_high)
-
-    lower_mass = skewnormal_cdf(logM, mean=mean, sigma=sigma, shape=shape) - \
-                 skewnormal_cdf(logM_low, mean=mean, sigma=sigma, shape=shape)
-    upper_mass = skewnormal_cdf(logM_high, mean=mean, sigma=sigma, shape=shape) - \
-                 skewnormal_cdf(logM, mean=mean, sigma=sigma, shape=shape)
-
-    return jnp.array([
-        mean_model - measured_mean,
-        lower_mass - quantile,
-        upper_mass - quantile,
-    ])
-
-
 def solve_logskewnormal_from_mean_and_bounds(measured_mean, M, deltaM_low, deltaM_high, quantile=0.32,
                                              initial_guess=None, max_iter=80, tol=1e-10,
                                              fd_eps=1e-6, damping=0.0):
