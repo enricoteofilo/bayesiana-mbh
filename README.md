@@ -1,2 +1,2 @@
-# bayesiana
+# bayesiana-mbh
 Codes written for the introductory course on Bayesian Statistics
