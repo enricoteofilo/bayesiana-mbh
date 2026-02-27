@@ -76,7 +76,7 @@ if __name__ == "__main__":
     x = jnp.linspace(-6.0, 6.0, 1000)
     sigma = 1.0
     mu = 0.0
-    alpha = np.linspace(-10.0, 10.0, 5)
+    alpha = np.linspace(-100.0, 100.0, 5)
     plt.figure(3)
     plt.title("SkewNormal examples")
     for a in alpha:
@@ -88,7 +88,7 @@ if __name__ == "__main__":
     x = jnp.logspace(-6.0, jnp.log10(20.0), 1000)
     sigma = 1.0
     mu = jnp.log(10.0)
-    alpha = np.linspace(-10.0, 10.0, 9)
+    alpha = np.linspace(-100.0, 100.0, 11)
     plt.figure(4)
     plt.title("SkewLogNormal examples")
     plt.axvline(jnp.exp(mu+0.5*sigma**2), linestyle='dotted', color='black',label=r"Mean $(\alpha=%.2lf)$" %a)
@@ -102,8 +102,8 @@ if __name__ == "__main__":
 
     plt.figure(5)
     plt.title(r"SkewLogNormal mean vs $\alpha$")
-    alphas = np.linspace(-20.0, 20.0, 1000)
-    means = jnp.array([logskewnormal_mean(mean=mu, sigma=sigma, shape=a)[0] for a in alphas])
+    alphas = np.linspace(1.0, 100.0, 1000)
+    means = jnp.array([logskewnormal_mean(mean=mu, sigma=sigma, shape=jnp.log(a))[0] for a in alphas])
     plt.plot(alphas, means, label=r"Params: $\mu=%.1lf, \sigma=%.1lf$"%(mu,sigma))
     plt.plot(alphas, jnp.abs(means-jnp.exp(mu+0.5*sigma**2)), label=r"Abs deviation from LogNormal mean")
     plt.axhline(jnp.exp(mu+0.5*sigma**2), linestyle='dotted', color='black', label="LogNormal mean")

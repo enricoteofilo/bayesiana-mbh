@@ -149,7 +149,11 @@ def solve_logskewnormal_from_mean_and_bounds(measured_mean, M, deltaM_low, delta
 
 
 def import_bh_data(fname: str) -> dict:
-
+    """
+    Function to import the $M_{BH}$, $\sigma_{GC}$ and corresponding 
+    uncertainties from the .txt file.
+    The output is a dictionary with keys given by the header.
+    """
     structured = np.genfromtxt(
         fname,
         names=True,
@@ -186,11 +190,6 @@ def load_nested_sampler_results(input_path: str):
         return pickle.load(f)
 
 @jit
-def normal_logpdf(x, mean=0.0, sigma=1.0):
-    inv_sigma = 1.0 / sigma
-    return -jnp.log(sigma) - 0.5*(((x - mean)*inv_sigma)**2+jnp.log(2.0*jnp.pi))
-
-@jit
 def skewnormal_logpdf(x, mean=0.0, sigma=1.0, shape=0.0):
     shape_squared = shape * shape
     delta = shape / jnp.sqrt(1.0 + shape_squared)
@@ -200,12 +199,6 @@ def skewnormal_logpdf(x, mean=0.0, sigma=1.0, shape=0.0):
     z = (x - loc) * inv_scale
     normal_log_term = -jnp.log(scale) - 0.5*(z*z + _LOG_2PI)
     return normal_log_term + jnp.log(jsp.stats.norm.cdf(shape * z)) + _LOG_2
-
-@jit
-def lognormal_logpdf(x, mean=0.0, sigma=1.0):
-    inv_sigma = 1.0 / sigma
-    logx = jnp.log(x)
-    return -jnp.log(sigma) - 0.5*(((logx - mean)*inv_sigma)**2+_LOG_2PI) - logx
 
 @jit
 def logskewnormal_logpdf(x, mean=0.0, sigma=1.0, shape=0.0):
